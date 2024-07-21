@@ -21,3 +21,11 @@ class AnalysisAgents:
 				detailed and attractive blog post.
                 """,
         )
+
+    def summarizer_agent(self):
+        return Agent(
+            role="Summarizer",
+            goal=f"""
+                Summarize the content
+                """,
+        )

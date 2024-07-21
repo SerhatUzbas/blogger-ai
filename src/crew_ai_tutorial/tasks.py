@@ -34,8 +34,7 @@ class BagMarketAnalaysis:
     def post_summarizer(self, post):
         return Task(
             description=f"""
-                    
-                    
+                                        
                     """
         )
 
