@@ -21,8 +21,6 @@ class BagMarketAnalaysis:
                 Design must be the most valuable aspect in report. 
                 Your information which you will collect will be used in a blog post.
                 
-                
-
                 Keep in mind, attention to detail is crucial for
                 a comprehensive analysis. It's currenlty 2024.
 
@@ -34,7 +32,8 @@ class BagMarketAnalaysis:
     def post_summarizer(self, post):
         return Task(
             description=f"""
-                                        
+                    Summarize the content very efficiently as you can.
+                    Your summarize will be used to get product photos.
                     """
         )
 
@@ -81,7 +80,8 @@ class BagMarketAnalaysis:
 			    describing the photograph exactly like the examples provided above.
 
                 
-                """
+                """,
+            agent=agent,
         )
 
     def review_photo(self, agent, product_website, product_details):

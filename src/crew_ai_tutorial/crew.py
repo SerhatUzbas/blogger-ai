@@ -10,56 +10,52 @@ import os
 # from crewai_tools import SerperDevTool
 
 os.environ["OPENAI_API_KEY"] = "NA"
-llm = Ollama(
-    model = "llama3",
-    base_url = "http://localhost:11434")
 
 
 @CrewBase
-class CrewAiTutorialCrew():
-	"""CrewAiTutorial crew"""
-	agents_config = 'config/agents.yaml'
-	tasks_config = 'config/tasks.yaml'
+class BlogCrew:
+    """Blog crew"""
 
-	@agent
-	def researcher(self) -> Agent:
-		return Agent(
-			config=self.agents_config['researcher'],
-			# tools=[MyCustomTool()], # Example of custom tool, loaded on the beginning of file
-			verbose=True,
-			llm=llm
-		)
+    def __init__(self):
+        self.llm = Ollama(model="llama3", base_url="http://localhost:11434")
 
-	@agent
-	def reporting_analyst(self) -> Agent:
-		return Agent(
-			config=self.agents_config['reporting_analyst'],
-			verbose=True,
-			llm=llm
-		)
+    agents_config = "config/agents.yaml"
+    tasks_config = "config/tasks.yaml"
 
-	@task
-	def research_task(self) -> Task:
-		return Task(
-			config=self.tasks_config['research_task'],
-			agent=self.researcher()
-		)
+    @agent
+    def researcher(self) -> Agent:
+        return Agent(
+            config=self.agents_config["researcher"],
+            # tools=[MyCustomTool()], # Example of custom tool, loaded on the beginning of file
+            verbose=True,
+            llm=self.llm,
+        )
 
-	@task
-	def reporting_task(self) -> Task:
-		return Task(
-			config=self.tasks_config['reporting_task'],
-			agent=self.reporting_analyst(),
-			output_file='report.md'
-		)
+    @agent
+    def reporting_analyst(self) -> Agent:
+        return Agent(
+            config=self.agents_config["reporting_analyst"], verbose=True, llm=self.llm
+        )
 
-	@crew
-	def crew(self) -> Crew:
-		"""Creates the CrewAiTutorial crew"""
-		return Crew(
-			agents=self.agents, # Automatically created by the @agent decorator
-			tasks=self.tasks, # Automatically created by the @task decorator
-			process=Process.sequential,
-			verbose=2,
-			# process=Process.hierarchical, # In case you wanna use that instead https://docs.crewai.com/how-to/Hierarchical/
-		)
+    @task
+    def research_task(self) -> Task:
+        return Task(config=self.tasks_config["research_task"], agent=self.researcher())
+
+    @task
+    def reporting_task(self) -> Task:
+        return Task(
+            config=self.tasks_config["reporting_task"],
+            agent=self.reporting_analyst(),
+            output_file="report.md",
+        )
+
+    @crew
+    def crew(self) -> Crew:
+        """Creates the CrewAiTutorial crew"""
+        return Crew(
+            agents=self.agents,  # Automatically created by the @agent decorator
+            tasks=self.tasks,  # Automatically created by the @task decorator
+            process=Process.sequential,
+            verbose=2,
+            # process=Process.hierarchical, # In case you wanna use that instead https://docs.crewai.com/how-to/Hierarchical/
+        )
