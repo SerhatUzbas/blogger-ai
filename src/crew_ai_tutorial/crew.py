@@ -1,61 +1,77 @@
-from crewai import Agent, Crew, Process, Task
-from crewai.project import CrewBase, agent, crew, task
-from langchain.llms import Ollama
-import os
+from crewai import Crew
+from crew_ai_tutorial.agents import BagAnalysisAgents, PhotoAgents
+from crew_ai_tutorial.tasks import BagMarketAnalysisTasks, PhotoTasks
 
-# Uncomment the following line to use an example of a custom tool
-# from crew_ai_tutorial.tools.custom_tool import MyCustomTool
+website = "https://madisonavenuecouture.com/products/hermes-birkin-25-rose-extreme-varanus-niloticus-lizard-palladium-hardware?variant=41026202697822"
+details = "This Birkin is in Rose Extreme Varanus Niloticus Lizard leather with palladium hardware and has tonal stitching, front strap, two straps with center toggle closure, clochette with lock and two keys and double rolled handles.The interior is lined with Rose Extreme chevre and has one zip pocket with an Hermes engraved zipper pull and an open pocket on the opposite side."
+description = "Very expensive handbag with red color."
 
-# Check our tools documentations for more information on how to use them
-# from crewai_tools import SerperDevTool
+# website = input("Bag website?\n")
+# details = input("Bag details?\n")
+# description = input("Bag description?\n")
 
-os.environ["OPENAI_API_KEY"] = "NA"
+bag_analysts = BagAnalysisAgents()
+media_creators = PhotoAgents()
+
+manager = bag_analysts.manager_agent()
+product_analyzer = bag_analysts.product_analyzer_agent()
+content_creator = bag_analysts.content_creator_agent()
+summarizer = bag_analysts.summarizer_agent()
 
 
-@CrewBase
-class BlogCrew:
-    """Blog crew"""
+analysis_tasks = BagMarketAnalysisTasks()
+photo_tasks = PhotoTasks()
 
-    def __init__(self):
-        self.llm = Ollama(model="llama3", base_url="http://localhost:11434")
+manage = analysis_tasks.manage(agent=manager)
+product_analysis = analysis_tasks.product_analysis(
+    product_description=description,
+    agent=product_analyzer,
+    product_details=details,
+    product_website=website,
+)
+write_post = analysis_tasks.write_blog_post(agent=content_creator, detail=details)
+summarize = analysis_tasks.post_summarizer(agent=summarizer)
 
-    agents_config = "config/agents.yaml"
-    tasks_config = "config/tasks.yaml"
 
-    @agent
-    def researcher(self) -> Agent:
-        return Agent(
-            config=self.agents_config["researcher"],
-            # tools=[MyCustomTool()], # Example of custom tool, loaded on the beginning of file
-            verbose=True,
-            llm=self.llm,
-        )
+analyst_crew = Crew(
+    manager_agent=manager,
+    agents=[product_analyzer, content_creator, summarizer],
+    tasks=[product_analysis, write_post, summarize],
+    verbose=True,
+)
 
-    @agent
-    def reporting_analyst(self) -> Agent:
-        return Agent(
-            config=self.agents_config["reporting_analyst"], verbose=True, llm=self.llm
-        )
+post = analyst_crew.kickoff()
 
-    @task
-    def research_task(self) -> Task:
-        return Task(config=self.tasks_config["research_task"], agent=self.researcher())
+photographer = media_creators.photographer_agent()
+quality_assurance_manager = media_creators.quality_agent()
 
-    @task
-    def reporting_task(self) -> Task:
-        return Task(
-            config=self.tasks_config["reporting_task"],
-            agent=self.reporting_analyst(),
-            output_file="report.md",
-        )
+take_photo = photo_tasks.take_photo(
+    agent=photographer,
+    summary=post,
+    product_details=details,
+    product_website=website,
+)
+review = photo_tasks.review_photo(
+    agent=quality_assurance_manager, product_details=details, product_website=website
+)
 
-    @crew
-    def crew(self) -> Crew:
-        """Creates the CrewAiTutorial crew"""
-        return Crew(
-            agents=self.agents,  # Automatically created by the @agent decorator
-            tasks=self.tasks,  # Automatically created by the @task decorator
-            process=Process.sequential,
-            verbose=2,
-            # process=Process.hierarchical, # In case you wanna use that instead https://docs.crewai.com/how-to/Hierarchical/
-        )
+
+photo_crew = Crew(
+    agents=[photographer, quality_assurance_manager],
+    tasks=[
+        take_photo,
+        review,
+    ],
+    verbose=True,
+)
+
+
+photo = photo_crew.kickoff()
+
+print("----post----")
+print("----------------------------------------")
+print(post)
+print("----------------------------------------")
+print("photo")
+print("----------------------------------------")
+print(photo)

@@ -1,8 +1,28 @@
 from textwrap import dedent
 from crewai import Task
 
+from crew_ai_tutorial.tools.browser_tool import BrowserTools
 
-class BagMarketAnalaysis:
+
+class BagMarketAnalysisTasks:
+
+    def manage(self, agent):
+        return Task(
+            description=dedent(
+                f"""\
+               Manage the team. Delegate tasks based on their titles and duties. Get the best result as you can. 
+                """
+            ),
+            expected_output=dedent(
+                """\
+                A detailed report on the tasks delegated and the outcomes achieved. This should include:
+                - List of tasks assigned
+                - Assigned team members
+                - Outcomes of each task
+                """
+            ),
+            agent=agent,
+        )
 
     def product_analysis(
         self, product_description, agent, product_website, product_details
@@ -19,42 +39,65 @@ class BagMarketAnalaysis:
                 and suggestions for enhancement or positioning.
                 Emphasize the aspects that make the product stand out.
                 Design must be the most valuable aspect in report. 
-                Your information which you will collect will be used in a blog post.
+                Your information which you collect will be used in a blog post.
+                
+                You can do it very detailed.
                 
                 Keep in mind, attention to detail is crucial for
                 a comprehensive analysis. It's currenlty 2024.
 
                 """
             ),
+            expected_output=dedent(
+                """\
+                Detailed analysis of the product.
+                """
+            ),
             agent=agent,
         )
 
-    def post_summarizer(self, post):
-        return Task(
-            description=f"""
-                    Summarize the content very efficiently as you can.
-                    Your summarize will be used to get product photos.
-                    """
-        )
-
-    def write_blog_post(self, agent, detail, blogpost):
+    def write_blog_post(self, agent, detail):
         return Task(
             description=f"""\
-                Craft a blog post from detail you have
+                Craft a blog post from info that product analyzer collect and from detail you have.
                 Detail is: {detail}.
                 
                 The post should be punchy, captivating, concise,
 			    interesting,impressive and have appeals especially for womans.
        
-                Your ad copy must be attention-grabbing and should
+       
+                Your blog post must be attention-grabbing and should
                 encourage viewers to take action, whether it's
                 visiting the website, making a purchase, or learning
                 more about the product.
+                
+                Most important part of the post must be the design features.
 
                 """,
+            expected_output=dedent(
+                """\
+                Attractive and impressing blog post.
+                """
+            ),
             agent=agent,
         )
 
+    def post_summarizer(self, agent):
+        return Task(
+            description=f"""
+                    Summarize the content that comes from content creator. Do it very efficiently as you can.
+                    Your summarize will be used to get product photos.
+                    """,
+            expected_output=dedent(
+                """\
+                Short summary of the blogpost.
+                """
+            ),
+            agent=agent,
+        )
+
+
+class PhotoTasks:
     def take_photo(self, agent, product_website, product_details, summary):
         return Task(
             description=f"""
@@ -81,6 +124,11 @@ class BagMarketAnalaysis:
 
                 
                 """,
+            expected_output=dedent(
+                """\
+                Three options for visual creating
+                """
+            ),
             agent=agent,
         )
 
@@ -104,6 +152,11 @@ class BagMarketAnalaysis:
 
                 Your final answer must be 3 reviewed options of photographs,
                 each with 1 paragraph description following the examples provided above.
+                """
+            ),
+            expected_output=dedent(
+                """\
+                One of the option that comes from photographer.
                 """
             ),
             agent=agent,
